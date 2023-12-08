@@ -3,6 +3,6 @@ package calculator
 type Car struct {
 }
 
-func (c Car) getVehicleType() string {
-	return "Car"
+func (c Car) getVehicleType() VehicleType {
+	return Basic
 }
