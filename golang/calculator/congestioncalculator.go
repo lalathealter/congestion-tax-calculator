@@ -7,7 +7,7 @@ import (
 )
 
 type TollRuleSet interface {
-	getTollFee(time.Time, Vehicle) int
+	getTollFee(time.Time) int
 	GetTax(Vehicle, []time.Time) int
 }
 
@@ -91,4 +91,49 @@ type TollFreeWeekDays [7]bool // starting from Sunday (in accordance with golang
 
 func (tfw TollFreeWeekDays) isFreeWeekDay(date time.Time) bool {
 	return tfw[date.Weekday()]
+}
+
+type TollRuleSetWithMaxTaxI interface {
+	GetMaxTax() int
+}
+
+func ClampTax(tax int, trs TollRuleSetWithMaxTaxI) int {
+	max := trs.GetMaxTax()
+	if tax > max {
+		tax = max
+	}
+	return tax
+}
+
+type TollRuleSetWithTimeSpanningI interface {
+	GetGroupingTimeSpan() time.Duration
+	ConcludeDatesIntoOne([]*time.Time) *time.Time
+}
+
+func GroupByTimeSpan(dates []time.Time, trs TollRuleSetWithTimeSpanningI) []time.Time {
+	dur := trs.GetGroupingTimeSpan()
+	coll := make([]*time.Time, 1, len(dates))
+	coll[0] = &dates[0]
+	currStart := dates[0]
+	lastUnion := 0
+
+	for i := 1; i < len(dates); i++ {
+		el := dates[i]
+		diff := el.Sub(currStart)
+
+		if diff >= dur {
+			currStart = el
+			res := trs.ConcludeDatesIntoOne(coll)
+			dates[lastUnion] = *res
+			lastUnion++
+			coll = nil
+		}
+		coll = append(coll, &el)
+	}
+
+	if coll != nil {
+		dates[lastUnion] = *trs.ConcludeDatesIntoOne(coll)
+	}
+
+	return dates[:lastUnion+1]
 }

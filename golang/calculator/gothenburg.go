@@ -1,6 +1,7 @@
 package calculator
 
 import (
+	"sort"
 	"time"
 )
 
@@ -16,6 +17,10 @@ type GothenburgRuleSet struct {
 	FreeVehicles TollFreeVehicles
 	FreeDates    TollFreeDates
 	FreeWeekDays TollFreeWeekDays
+}
+
+func (grs GothenburgRuleSet) GetMaxTax() int {
+	return 60
 }
 
 var GothenburgTollFreeVehicles = TollFreeVehicles{
@@ -65,9 +70,8 @@ func (grs GothenburgRuleSet) isTollFreeDate(date time.Time) bool {
 
 }
 
-func (grs GothenburgRuleSet) getTollFee(t time.Time, v Vehicle) int {
-	if grs.isTollFreeDate(t) ||
-		grs.FreeVehicles.isTollFreeVehicle(v) {
+func (grs GothenburgRuleSet) getTollFee(t time.Time) int {
+	if grs.isTollFreeDate(t) {
 		return 0
 	}
 
@@ -75,28 +79,41 @@ func (grs GothenburgRuleSet) getTollFee(t time.Time, v Vehicle) int {
 }
 
 func (grs GothenburgRuleSet) GetTax(vehicle Vehicle, dates []time.Time) int {
-	intervalStart := dates[0]
+	if grs.FreeVehicles.isTollFreeVehicle(vehicle) {
+		return 0
+	}
+
+	dates = SortDates(dates)
+
 	totalFee := 0
+	dates = GroupByTimeSpan(dates, grs)
 	for _, date := range dates {
-		nextFee := grs.getTollFee(date, vehicle)
-		tempFee := grs.getTollFee(date, vehicle)
+		totalFee += grs.getTollFee(date)
+	}
 
-		minutes := date.Sub(intervalStart).Minutes()
+	return ClampTax(totalFee, grs)
+}
 
-		if minutes <= 60 {
-			if totalFee > 0 {
-				totalFee = totalFee - tempFee
-			}
-			if nextFee >= tempFee {
-				tempFee = nextFee
-			}
-		} else {
-			totalFee = totalFee + nextFee
+func SortDates(dates []time.Time) []time.Time {
+	sort.Slice(dates, func(i, j int) bool {
+		return dates[i].Before(dates[j])
+	})
+	return dates
+}
+
+func (grs GothenburgRuleSet) GetGroupingTimeSpan() time.Duration {
+	return time.Hour
+}
+
+func (grs GothenburgRuleSet) ConcludeDatesIntoOne(dates []*time.Time) *time.Time {
+	max := -1
+	var result *time.Time
+	for _, t := range dates {
+		curr := grs.FeeIntervals.FindAmount(*t)
+		if max < curr {
+			max = curr
+			result = t
 		}
 	}
-
-	if totalFee > 60 {
-		totalFee = 60
-	}
-	return totalFee
+	return result
 }
