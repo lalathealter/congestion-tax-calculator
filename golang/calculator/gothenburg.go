@@ -58,7 +58,7 @@ var GothenburgTollFeeByTime = TollFeeMap{
 	{15, 30, 18},
 	{17, 0, 13},
 	{18, 0, 8},
-	{18, 30, 8},
+	{18, 30, 0},
 }
 
 func (grs GothenburgRuleSet) isTollFreeDate(date time.Time) bool {
@@ -75,7 +75,7 @@ func (grs GothenburgRuleSet) getTollFee(t time.Time) int {
 		return 0
 	}
 
-	return grs.FeeIntervals.FindAmount(t)
+	return grs.FeeIntervals.findAmount(t)
 }
 
 func (grs GothenburgRuleSet) GetTax(vehicle Vehicle, dates []time.Time) int {
@@ -109,7 +109,7 @@ func (grs GothenburgRuleSet) ConcludeDatesIntoOne(dates []*time.Time) *time.Time
 	max := -1
 	var result *time.Time
 	for _, t := range dates {
-		curr := grs.FeeIntervals.FindAmount(*t)
+		curr := grs.FeeIntervals.findAmount(*t)
 		if max < curr {
 			max = curr
 			result = t

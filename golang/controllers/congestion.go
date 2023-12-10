@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"congestion-calculator/calculator"
-  "errors"
+	"errors"
 	"net/http"
 	"time"
 
@@ -16,14 +16,16 @@ type CongestionTaxInput struct {
 
 var ErrEmptyTimeIntervals = errors.New("No time intervals were supplied for the calculation")
 
+const timeStringFormat = "2006-01-02 15:04:05"
+
 func (cti CongestionTaxInput) ParseIntervals() ([]time.Time, error) {
-  if len(cti.Intervals) == 0 {
-    return nil, ErrEmptyTimeIntervals
-  }
+	if len(cti.Intervals) == 0 {
+		return nil, ErrEmptyTimeIntervals
+	}
 
 	timeIntervals := make([]time.Time, len(cti.Intervals))
 	for i, timeStr := range cti.Intervals {
-		parsed, err := time.Parse("2006-01-02 15:04:05", timeStr)
+		parsed, err := time.Parse(timeStringFormat, timeStr)
 		if err != nil {
 			return nil, err
 		}
@@ -53,7 +55,6 @@ func HandleCongestionCalculation(c *gin.Context) {
 	}
 
 	timeIntervals, err := congTaxInput.ParseIntervals()
-
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return

@@ -41,12 +41,10 @@ func (tfv TollFreeVehicles) isTollFreeVehicle(v Vehicle) bool {
 
 type TollFeeMap [][3]int // interval's hour, minute and tax amount
 
-func (fees TollFeeMap) FindAmount(t time.Time) int {
+func (fees TollFeeMap) findAmount(t time.Time) int {
 	var amount int
 
-	i := 1
-	for cycles := 0; cycles <= len(fees); cycles++ {
-		inData := fees[i]
+	for _, inData := range fees {
 		inhour, inminute, tax := inData[0], inData[1], inData[2]
 		interval := time.Date(
 			t.Year(), t.Month(), t.Day(),
@@ -58,17 +56,8 @@ func (fees TollFeeMap) FindAmount(t time.Time) int {
 			break
 		}
 		amount = tax
-		i = abound(i, len(fees))
 	}
 	return amount
-}
-
-func abound(n, length int) int {
-	n++
-	if n > length {
-		return 0
-	}
-	return n
 }
 
 type TollFreeDates map[[2]int]bool // month, day

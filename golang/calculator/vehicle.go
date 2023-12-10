@@ -37,6 +37,8 @@ func ParseVehicleType(vehtype VehicleType) (Vehicle, error) {
 	switch vehtype {
 	case Basic:
 		veh = Car{}
+	case Tractor:
+		veh = OtherVehicle{vehtype}
 	case Bus:
 		veh = OtherVehicle{vehtype}
 	case Diplomat:
