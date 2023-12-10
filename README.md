@@ -1,5 +1,26 @@
 # Congestion Tax Calculator
 
+## Running instructions
+
+Before executing any commands, make sure that you CD'ed into this project's "/golang" directory and that you have a Golang compiler installed.
+
+To run:
+```
+go run .
+```
+
+To test:
+```
+go test ./...
+```
+
+To build an executable:
+```
+go build .
+```
+
+## Initial text:
+
 Welcome the Volvo Cars Congestion Tax Calculator assignment.
 
 This repository contains a developer [assignment](ASSIGNMENT.md) used as a basis for candidate intervew and evaluation.
