@@ -4,7 +4,12 @@
 
 Before executing any commands, make sure that you CD'ed into this project's "/golang" directory and that you have a Golang compiler installed.
 
-To run:
+To download all dependencies:
+```
+go mod download
+```
+
+To run (if you don't have the dependencies installed, it'll get them automatically):
 ```
 go run .
 ```
